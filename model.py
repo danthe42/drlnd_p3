@@ -12,19 +12,12 @@ class Network(nn.Module):
     def __init__(self, input_dim, hidden_in_dim, hidden_out_dim, output_dim, actor=False):
         super().__init__()
 
-        """self.input_norm = nn.BatchNorm1d(input_dim)
-        self.input_norm.weight.data.fill_(1)
-        self.input_norm.bias.data.fill_(0)"""
-
-        self.bnorm1 = nn.BatchNorm1d(input_dim)
         self.fc1 = nn.Linear(input_dim,hidden_in_dim)
-        self.bnorm2 = nn.BatchNorm1d(hidden_in_dim)
         self.fc2 = nn.Linear(hidden_in_dim,hidden_out_dim)
-        self.bnorm3 = nn.BatchNorm1d(hidden_out_dim)
         self.fc3 = nn.Linear(hidden_out_dim,output_dim)
-        self.nonlin = f.relu #leaky_relu
+        self.nonlin = f.relu
         self.actor = actor
-        #self.reset_parameters()
+        self.reset_parameters()
 
     def reset_parameters(self):
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
@@ -34,14 +27,16 @@ class Network(nn.Module):
     def forward(self, x):
         if self.actor:
             # return a vector of the force
-            h1 = self.nonlin(self.fc1(self.bnorm1(x)))
 
-            h2 = self.nonlin(self.fc2(self.bnorm2(h1)))
-            return torch.tanh(self.fc3(self.bnorm3(h2)))
+            #print("x:", x)
+            h1 = self.nonlin(self.fc1(x))
+            h2 = self.nonlin(self.fc2(h1))
+            return torch.tanh(self.fc3(h2))
         
         else:
             # critic network simply outputs a number
-            h1 = self.nonlin(self.fc1(self.bnorm1(x)))
-            h2 = self.nonlin(self.fc2(self.bnorm2(h1)))
-            h3 = (self.fc3(self.bnorm3(h2)))
+            h1 = self.nonlin(self.fc1(x))
+            h2 = self.nonlin(self.fc2(h1))
+            h3 = (self.fc3(h2))
             return h3
+            

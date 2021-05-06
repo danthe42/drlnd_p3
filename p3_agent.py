@@ -14,8 +14,8 @@ class MADDPG:
         super().__init__()
 
         # critic input consists of the global state ( 2 local observations ) and the actions of all agents. 
-        self.maddpg_agent = [DDPGAgent(obs_size, 512, 256, action_size, 2*obs_size+2*action_size, 512, 128, device, lr_actor, lr_critic), 
-                             DDPGAgent(obs_size, 512, 256, action_size, 2*obs_size+2*action_size, 512, 128, device, lr_actor, lr_critic)]
+        self.maddpg_agent = [DDPGAgent(obs_size, 256, 128, action_size, 2*obs_size+2*action_size, 256, 64, device, lr_actor, lr_critic), 
+                             DDPGAgent(obs_size, 256, 128, action_size, 2*obs_size+2*action_size, 256, 64, device, lr_actor, lr_critic)]
         
         self.discount_factor = discount_factor
         self.tau = tau
@@ -124,7 +124,7 @@ class MADDPG:
         agent.actor_optimizer.step()
 
     def update_targets(self):
-        """soft update targets"""
+        """soft update targets using self.tau as factor"""
         self.iter += 1
         for ddpg_agent in self.maddpg_agent:
             soft_update(ddpg_agent.target_actor, ddpg_agent.actor, self.tau)
