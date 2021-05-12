@@ -38,14 +38,15 @@ class MADDPG:
         target_actors = [ddpg_agent.target_actor for ddpg_agent in self.maddpg_agent]
         return target_actors
 
+    # Get actions of all available agents based on their local observation from the Current Actor, with a random OUNoise is preferred.
     def act(self, obs_all_agents, noise=0.0):
         """get actions from all agents in the MADDPG object"""
         actions = [agent.act(obs, noise) for agent, obs in zip(self.maddpg_agent, obs_all_agents)]
         return actions
 
+    # Get actions of all available agents based on their local observation from the Target Actor, with a random OUNoise is preferred.
     def target_act(self, obs_all_agents, noise=0.0):
         """get target network actions from all the agents in the MADDPG object """
-        #print("tact: ", obs_all_agents)
         target_actions = [ddpg_agent.target_act(obs, noise) for ddpg_agent, obs in zip(self.maddpg_agent, obs_all_agents)]
         return target_actions
 
@@ -74,6 +75,7 @@ class MADDPG:
         """
           1st step: update critic network using critic_loss
             This critic loss will be the batch mean of (y- Q(s,a) from target network)^2
+            Only the selected agent's critic is optimized.  
         """
         agent.critic_optimizer.zero_grad()
 
@@ -101,7 +103,12 @@ class MADDPG:
         torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), self.gradient_clip)
         agent.critic_optimizer.step()
 
-        """update actor network using policy gradient"""
+        """
+          2nd step: update actor network using policy gradient
+            This actor's loss will be the mean of the values (based on critic) using all observations and the actors' chosen actions for all transitions in the minibatch
+            Only the selected agent's actor is optimized.  
+        """
+
         agent.actor_optimizer.zero_grad()
 
         # make input to agent
@@ -123,6 +130,7 @@ class MADDPG:
         torch.nn.utils.clip_grad_norm_(agent.actor.parameters(),self.gradient_clip)
         agent.actor_optimizer.step()
 
+    # perform a soft update on all agents from their Current networks to their Target networks 
     def update_targets(self):
         """soft update targets using self.tau as factor"""
         self.iter += 1

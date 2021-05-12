@@ -7,7 +7,6 @@ from torch.optim import Adam
 import torch
 import numpy as np
 
-
 # add OU noise for exploration
 from OUNoise import OUNoise
 
@@ -28,14 +27,17 @@ class DDPGAgent:
         hard_update(self.target_critic, self.critic)
 
         self.actor_optimizer = Adam(self.actor.parameters(), lr=lr_actor)
+
+        # Use weight_decay in the critic optimizer (additional panelty)
         self.critic_optimizer = Adam(self.critic.parameters(), lr=lr_critic, weight_decay=1.e-5)
 
-
+    # Get actions from the Current Actor, with a random OUNoise is preferred.
     def act(self, obs, noise=0.0):
         obs = obs.to(self.device)
         action = self.actor(obs) + noise*self.noise.noise().to(self.device)
         return action
 
+    # Get actions from the Target Actor, with a random OUNoise is preferred.
     def target_act(self, obs, noise=0.0):
         obs = obs.to(self.device)
         action = self.target_actor(obs) + noise*self.noise.noise().to(self.device)
