@@ -34,7 +34,7 @@ The agents can be trained using a Jupyter notebook. This notebook presents a nic
   - the visualized results (scores),
   - after training, the model is loaded and an episode is played as a demonstration.   
 
-  This file is also exported here, so you can read it without an installed Jupyter notebook instance: [exported notebook](export/Continuous_Control.md)
+  This file is also exported here, so you can read it without an installed Jupyter notebook instance: [exported notebook](export/Tennis.md)
 
 
 
